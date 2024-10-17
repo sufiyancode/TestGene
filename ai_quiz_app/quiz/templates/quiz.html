@@ -1,0 +1,67 @@
+<!-- quiz/templates/quiz/quiz.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Quiz</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  </head>
+  <body>
+    <h1>AI Quiz</h1>
+    <select id="topic">
+      <option value="Geography">Geography</option>
+      <option value="Health">Health</option>
+      <option value="Sports">Sports</option>
+    </select>
+    <button onclick="generateQuestion()">Generate Question</button>
+    <div id="question"></div>
+    <input type="text" id="answer" placeholder="Your answer" />
+    <button onclick="submitAnswer()">Submit Answer</button>
+    <div id="validation"></div>
+
+    {% csrf_token %}
+
+    <script>
+      const csrftoken = document.querySelector(
+        "[name=csrfmiddlewaretoken]"
+      ).value;
+
+      axios.defaults.headers.common["X-CSRFToken"] = csrftoken;
+
+      function generateQuestion() {
+        const topic = document.getElementById("topic").value;
+        axios
+          .post("/quiz/", new URLSearchParams({ topic: topic }), {
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          })
+          .then((response) => {
+            document.getElementById("question").innerText =
+              response.data.question;
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+
+      function submitAnswer() {
+        const question = document.getElementById("question").innerText;
+        const answer = document.getElementById("answer").value;
+        axios
+          .get(
+            `/quiz/?question=${encodeURIComponent(
+              question
+            )}&answer=${encodeURIComponent(answer)}`
+          )
+          .then((response) => {
+            document.getElementById("validation").innerText =
+              response.data.validation;
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+    </script>
+  </body>
+</html>
